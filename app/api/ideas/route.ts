@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv';
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -12,7 +13,6 @@ interface Idea {
   timestamp: number;
 }
 
-// GET all ideas
 export async function GET() {
   try {
     const ideas = await kv.get<Idea[]>('ideas') || [];
@@ -23,25 +23,60 @@ export async function GET() {
   }
 }
 
-// POST new idea
 export async function POST(req: Request) {
   try {
-    const newIdea: Idea = await req.json();
-    const ideas = await kv.get<Idea[]>('ideas') || [];
+    // Rate limiting
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const { success, remaining } = await rateLimit(ip, 10, 60);
     
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again later.' },
+        { 
+          status: 429,
+          headers: { 'X-RateLimit-Remaining': remaining.toString() }
+        }
+      );
+    }
+    
+    const newIdea: Idea = await req.json();
+    
+    // Validation
+    if (!newIdea.text || newIdea.text.length < 10) {
+      return NextResponse.json(
+        { error: 'Idea must be at least 10 characters' },
+        { status: 400 }
+      );
+    }
+    
+    const ideas = await kv.get<Idea[]>('ideas') || [];
     ideas.unshift(newIdea);
     await kv.set('ideas', ideas);
     
-    return NextResponse.json(newIdea);
+    return NextResponse.json(newIdea, {
+      headers: { 'X-RateLimit-Remaining': remaining.toString() }
+    });
   } catch (error) {
     console.error('Error adding idea:', error);
-    return NextResponse.json({ error: 'Failed to add idea' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to add idea' },
+      { status: 500 }
+    );
   }
 }
 
-// PATCH vote on idea
 export async function PATCH(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const { success } = await rateLimit(ip, 20, 60);
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded' },
+        { status: 429 }
+      );
+    }
+    
     const { id } = await req.json();
     const ideas = await kv.get<Idea[]>('ideas') || [];
     
@@ -54,6 +89,9 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error voting:', error);
-    return NextResponse.json({ error: 'Failed to vote' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to vote' },
+      { status: 500 }
+    );
   }
 }

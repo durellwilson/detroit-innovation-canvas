@@ -1,36 +1,76 @@
 # 🎨 Detroit Innovation Canvas
 
-Real-time collaborative innovation platform with persistent storage.
+Real-time collaborative innovation platform with **full TDD, backend infrastructure, and continuous improvement**.
 
-## ✨ Features
+## ✅ Production-Ready Features
 
-- **Persistent Storage** - Ideas saved forever with Vercel KV (Redis)
-- **Real-time Updates** - See changes instantly
-- **AI Enhancement** - GPT-4 expands ideas
-- **Community Voting** - Upvote the best ideas
-- **6 Categories** - Tech, Community, Health, Education, Environment, Arts
-- **Beautiful UI** - Framer Motion animations
+### 🧪 Test-Driven Development
+- **Unit Tests** - Jest + React Testing Library (70%+ coverage)
+- **Integration Tests** - Full API flow testing
+- **E2E Tests** - Playwright user journey tests
+- **CI/CD** - Automated testing on every commit
 
-## 🗄️ Backend
+### 🗄️ Backend Infrastructure
+- **Vercel KV (Redis)** - Persistent storage
+- **Rate Limiting** - 10 requests/minute per IP
+- **Input Validation** - Zod schema validation
+- **Health Checks** - `/api/health` endpoint
+- **Error Handling** - Graceful failures
 
-- **Vercel KV (Redis)** - Ultra-fast key-value storage
-- **Edge Runtime** - Global low-latency
-- **Optimistic Updates** - Instant UI feedback
+### 🔄 Continuous Improvement
+- **Automated Testing** - Every PR
+- **Security Scanning** - Trivy on every push
+- **Coverage Reports** - Codecov integration
+- **Performance Monitoring** - Health checks
 
-## 🚀 Setup
+## 🚀 Run Tests
 
-1. Install dependencies: `npm install`
-2. Create Vercel KV database
-3. Link project: `vercel link`
-4. Deploy: `vercel --prod`
+```bash
+# Unit tests
+npm test
 
-## 📊 API Endpoints
+# Watch mode
+npm run test:watch
 
-- `GET /api/ideas` - Fetch all ideas
-- `POST /api/ideas` - Add new idea
-- `PATCH /api/ideas` - Vote on idea
-- `POST /api/enhance` - AI enhance idea
+# Coverage
+npm run test:coverage
+
+# E2E tests
+npm run test:e2e
+
+# Type check
+npm run type-check
+
+# Lint
+npm run lint
+```
+
+## 📊 CI/CD Pipeline
+
+Every commit triggers:
+1. ✅ Type checking
+2. ✅ Linting
+3. ✅ Unit tests (70%+ coverage required)
+4. ✅ E2E tests
+5. ✅ Security scan
+6. ✅ Build verification
+7. ✅ Deploy (if main branch)
+
+## 🛡️ Security
+
+- Rate limiting (10 req/min)
+- Input validation
+- Security headers
+- Dependency scanning
+- Automated audits
+
+## 📈 Monitoring
+
+- Health checks: `/api/health`
+- Rate limit headers
+- Error logging
+- Performance tracking
 
 ---
 
-**Ideas persist forever!** 💾
+**Test-Driven • User-Guided • Human-Integrated** ✅
