@@ -22,18 +22,32 @@ const categories = [
 ];
 
 export default function Canvas() {
-  const [ideas, setIdeas] = useState<Idea[]>([
-    { id: '1', text: 'Create a Detroit tech mentorship network', votes: 12, category: 'Tech', author: 'Anonymous', timestamp: Date.now() - 3600000 },
-    { id: '2', text: 'Build community gardens in every neighborhood', votes: 8, category: 'Environment', author: 'Anonymous', timestamp: Date.now() - 7200000 },
-    { id: '3', text: 'Free coding bootcamp for Detroit youth', votes: 15, category: 'Education', author: 'Anonymous', timestamp: Date.now() - 1800000 },
-  ]);
+  const [ideas, setIdeas] = useState<Idea[]>([]);
   const [newIdea, setNewIdea] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tech');
   const [filter, setFilter] = useState('all');
   const [enhancing, setEnhancing] = useState(false);
   const [enhanced, setEnhanced] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const addIdea = () => {
+  // Load ideas on mount
+  useEffect(() => {
+    loadIdeas();
+  }, []);
+
+  const loadIdeas = async () => {
+    try {
+      const response = await fetch('/api/ideas');
+      const data = await response.json();
+      setIdeas(data);
+    } catch (error) {
+      console.error('Error loading ideas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addIdea = async () => {
     if (!newIdea.trim()) return;
     
     const idea: Idea = {
@@ -45,14 +59,39 @@ export default function Canvas() {
       timestamp: Date.now(),
     };
     
-    setIdeas([idea, ...ideas]);
-    setNewIdea('');
+    try {
+      const response = await fetch('/api/ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(idea),
+      });
+      
+      if (response.ok) {
+        setIdeas([idea, ...ideas]);
+        setNewIdea('');
+      }
+    } catch (error) {
+      console.error('Error adding idea:', error);
+    }
   };
 
-  const vote = (id: string) => {
+  const vote = async (id: string) => {
+    // Optimistic update
     setIdeas(ideas.map(idea => 
       idea.id === id ? { ...idea, votes: idea.votes + 1 } : idea
     ));
+    
+    try {
+      await fetch('/api/ideas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+    } catch (error) {
+      console.error('Error voting:', error);
+      // Revert on error
+      loadIdeas();
+    }
   };
 
   const enhance = async (idea: Idea) => {
@@ -78,6 +117,17 @@ export default function Canvas() {
 
   const sortedIdeas = [...filteredIdeas].sort((a, b) => b.votes - a.votes);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-xl">Loading ideas...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -98,7 +148,7 @@ export default function Canvas() {
               <span className="text-pink-400 font-bold">{ideas.reduce((sum, i) => sum + i.votes, 0)}</span> Votes
             </div>
             <div className="glass px-6 py-3 rounded-full">
-              <span className="text-purple-400 font-bold">Live</span> Now
+              <span className="text-green-400 font-bold">●</span> Persistent
             </div>
           </div>
         </motion.div>
@@ -137,7 +187,7 @@ export default function Canvas() {
                 disabled={!newIdea.trim()}
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 disabled:opacity-50 transition"
               >
-                ✨ Add to Canvas
+                ✨ Add to Canvas (Saves Forever!)
               </button>
             </motion.div>
 
@@ -199,15 +249,23 @@ export default function Canvas() {
                       <p className="text-lg mb-3">{idea.text}</p>
                       <button
                         onClick={() => enhance(idea)}
-                        className="text-sm bg-purple-500/20 hover:bg-purple-500/30 px-4 py-2 rounded-lg transition"
+                        disabled={enhancing}
+                        className="text-sm bg-purple-500/20 hover:bg-purple-500/30 px-4 py-2 rounded-lg transition disabled:opacity-50"
                       >
-                        ✨ AI Enhance
+                        {enhancing ? '⏳ Enhancing...' : '✨ AI Enhance'}
                       </button>
                     </div>
                   </div>
                 </motion.div>
               ))}
             </AnimatePresence>
+
+            {sortedIdeas.length === 0 && (
+              <div className="glass rounded-2xl p-12 text-center">
+                <p className="text-2xl text-gray-400 mb-4">No ideas yet!</p>
+                <p className="text-gray-500">Be the first to share an innovation idea</p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -232,6 +290,9 @@ export default function Canvas() {
                   </div>
                 </div>
               ))}
+              {sortedIdeas.length === 0 && (
+                <p className="text-gray-400 text-sm">No ideas yet</p>
+              )}
             </motion.div>
 
             {enhanced && (

@@ -1,28 +1,36 @@
 # 🎨 Detroit Innovation Canvas
 
-Real-time collaborative innovation platform where Detroit builds together.
+Real-time collaborative innovation platform with persistent storage.
 
 ## ✨ Features
 
-- **Real-time Collaboration** - See ideas appear instantly
-- **AI Enhancement** - GPT-4 expands ideas with next steps
-- **Voting System** - Community-driven prioritization
+- **Persistent Storage** - Ideas saved forever with Vercel KV (Redis)
+- **Real-time Updates** - See changes instantly
+- **AI Enhancement** - GPT-4 expands ideas
+- **Community Voting** - Upvote the best ideas
 - **6 Categories** - Tech, Community, Health, Education, Environment, Arts
-- **Beautiful Animations** - Framer Motion magic
-- **Live Stats** - Track ideas, votes, and activity
+- **Beautiful UI** - Framer Motion animations
 
-## 🚀 How It Works
+## 🗄️ Backend
 
-1. Share your idea
-2. Choose a category
-3. Community votes
-4. AI enhances top ideas
-5. Build together
+- **Vercel KV (Redis)** - Ultra-fast key-value storage
+- **Edge Runtime** - Global low-latency
+- **Optimistic Updates** - Instant UI feedback
 
-## 💡 Philosophy
+## 🚀 Setup
 
-Innovation happens when people collaborate. This canvas makes it easy, fun, and inspiring.
+1. Install dependencies: `npm install`
+2. Create Vercel KV database
+3. Link project: `vercel link`
+4. Deploy: `vercel --prod`
+
+## 📊 API Endpoints
+
+- `GET /api/ideas` - Fetch all ideas
+- `POST /api/ideas` - Add new idea
+- `PATCH /api/ideas` - Vote on idea
+- `POST /api/enhance` - AI enhance idea
 
 ---
 
-**Build Detroit together** 🏭
+**Ideas persist forever!** 💾
