@@ -56,6 +56,15 @@ Every commit triggers:
 6. ✅ Build verification
 7. ✅ Deploy (if main branch)
 
+### 🚀 GitHub Pages Deployment
+
+The project automatically deploys to GitHub Pages on every push to the `main` branch:
+- **Build**: Static export via Next.js (`npm run build`)
+- **Deploy**: Automatic deployment to GitHub Pages
+- **URL**: Available at your GitHub Pages URL once deployed
+
+**Note**: API routes require server-side execution and won't function on GitHub Pages (static hosting). For full functionality including API routes, consider deploying to Vercel or another platform that supports server-side rendering.
+
 ## 🛡️ Security
 
 - Rate limiting (10 req/min)
